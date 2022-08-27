@@ -74,8 +74,8 @@ type RandomUser struct {
 	} `json:"info"`
 }
 
-func GetRandomUser(c *gin.Context){
-	url := "https://randomuser.me/api/"
+func GetRandomUser(url string) gin.HandlerFunc {
+	
 
 	var user RandomUser
 
@@ -93,15 +93,27 @@ func GetRandomUser(c *gin.Context){
 
 	json.Unmarshal([]byte(jsonData), &user)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": user.Results,
-	  })
+	return func(c *gin.Context) {
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": user,
+		})
+        
+        c.Next()
+    }
+	
 
 }
 
 func main() {
+	url := "https://randomuser.me/api/"
 	
 	r := gin.Default()
-	r.GET("/", GetRandomUser)
+
+	r.Use(GetRandomUser(url))
+
+	r.GET("/", func(c *gin.Context){
+
+	})
 	r.Run()
 }
