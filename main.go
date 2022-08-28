@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -74,12 +77,12 @@ type RandomUser struct {
 	} `json:"info"`
 }
 
-func GetRandomUser(url string) gin.HandlerFunc {
-	
+func GetRandomUserJSON(u string) RandomUser {
 
 	var user RandomUser
 
-	data, err  := http.Get(url)
+	data, err  := http.Get(u)
+	fmt.Println(data)
 
 	if err != nil {
 		panic(err)
@@ -91,26 +94,41 @@ func GetRandomUser(url string) gin.HandlerFunc {
 		panic(err)
 	}
 
-	json.Unmarshal([]byte(jsonData), &user)
+	json.Unmarshal(jsonData, &user)
+
+	return user
+	
+}
+
+func GetRandomOneUser(u string) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": user,
+		
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"message": GetRandomUserJSON(u).Results[0],
 		})
-        
+
         c.Next()
     }
-	
 
 }
 
 func main() {
-	url := "https://randomuser.me/api/"
+
+
+	u := "https://randomuser.me/api/"
 	
 	r := gin.Default()
 
-	r.Use(GetRandomUser(url))
+	r.SetFuncMap(template.FuncMap{
+		"upper" : strings.ToUpper,
+	})
+
+	r.Static("/assets", "./assets")
+
+	r.LoadHTMLGlob("templates/*.html")
+
+	r.Use(GetRandomOneUser(u))
 
 	r.GET("/", func(c *gin.Context){
 
