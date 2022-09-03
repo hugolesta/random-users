@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -82,7 +81,7 @@ func GetRandomUserJSON(u string) RandomUser {
 	var user RandomUser
 
 	data, err  := http.Get(u)
-	fmt.Println(data)
+
 
 	if err != nil {
 		panic(err)
@@ -94,8 +93,9 @@ func GetRandomUserJSON(u string) RandomUser {
 		panic(err)
 	}
 
+	
 	json.Unmarshal(jsonData, &user)
-
+	
 	return user
 	
 }
@@ -105,7 +105,7 @@ func GetRandomOneUser(u string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		
 		c.HTML(http.StatusOK, "index.html", gin.H{
-			"message": GetRandomUserJSON(u).Results[0],
+			"content": GetRandomUserJSON(u).Results[0],
 		})
 
         c.Next()
